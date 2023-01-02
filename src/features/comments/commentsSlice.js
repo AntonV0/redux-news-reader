@@ -12,6 +12,21 @@ export const loadCommentsForArticleId = createAsyncThunk(
 );
 
 // Create postCommentForArticleId here.
+export const postCommentForArticleId = createAsyncThunk(
+  'comments/postCommentForArticleId',
+  async ({ articleId, comment}) => {
+    const requestBody = JSON.stringify({ comment: comment });
+    const response = await fetch(
+      `api/articles/${articleId}/comments`,
+      {
+        method: 'POST',
+        body: requestBody
+      }
+    );
+    const json = await response.json();
+    return json;
+  }
+);
 
 export const commentsSlice = createSlice({
   name: 'comments',
@@ -19,11 +34,14 @@ export const commentsSlice = createSlice({
     // Add initial state properties here.
     byArticleId: {},
     isLoadingComments: false,
-    failedToLoadComments: false
+    failedToLoadComments: false,
+    createCommentIsPending: false,
+    failedToCreateComment: false
   },
   // Add extraReducers here.
   extraReducers: (builder) => {
     builder
+      // loadCommentsForArticleId cases
       .addCase(loadCommentsForArticleId.pending, (state) => {
         state.isLoadingComments = true;
         state.failedToLoadComments = false;
@@ -37,7 +55,51 @@ export const commentsSlice = createSlice({
         state.isLoadingComments = false;
         state.failedToLoadComments = true;
       })
+      // postCommentForArticleId cases
+      .addCase(postCommentForArticleId.pending, (state) => {
+        state.createCommentIsPending = true;
+        state.failedToCreateComment = false;
+      })
+      .addCase(postCommentForArticleId.fulfilled, (state, action) => {
+        state.createCommentIsPending = false;
+        state.failedToCreateComment = false;
+        state.byArticleId = action.payload.articleId;
+      })
+      .addCase(postCommentForArticleId.rejected, (state) => {
+        state.createCommentIsPending = false;
+        state.failedToCreateComment = true;
+      })
   }
+/* Alternative way of adding extraReducers (without the builder notation):
+  extraReducers: {
+      [loadCommentsForArticleId.pending]: (state) => {
+        state.isLoadingComments = true;
+        state.failedToLoadComments = false;
+      },
+      [loadCommentsForArticleId.fulfilled]: (state, action) => {
+        state.isLoadingComments = false;
+        state.failedToLoadComments = false;
+        state.byArticleId = action.payload.articleId;
+      },
+      [loadCommentsForArticleId.rejected]: (state) => {
+        state.isLoadingComments = false;
+        state.failedToLoadComments = true;
+      },
+      [postCommentForArticleId.pending]: (state) => {
+      state.createCommentIsPending = true;
+      state.failedToCreateComment = false
+      },
+      [postCommentForArticleId.fulfilled]: (state, action) => {
+      state.createCommentIsPending = false;
+      state.failedToCreateComment = false;
+      state.byArticleId = action.payload.articleId;
+      },
+      [postCommentForArticleId.rejected]: (state) => {
+      state.createCommentIsPending = false;
+      state.failedToCreateComment = true;
+      }
+    }
+*/
 });
 
 export const selectComments = (state) => state.comments.byArticleId;
