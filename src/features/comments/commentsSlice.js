@@ -49,7 +49,10 @@ export const commentsSlice = createSlice({
       .addCase(loadCommentsForArticleId.fulfilled, (state, action) => {
         state.isLoadingComments = false;
         state.failedToLoadComments = false;
-        state.byArticleId = action.payload.articleId;
+        state.byArticleId[action.payload.articleId] = action.payload.comments;
+      /* Alternative way to write fulfilled state action:
+        state.byArticleId = {[action.payload.articleId]: action.payload.comments};
+      */
       })
       .addCase(loadCommentsForArticleId.rejected, (state) => {
         state.isLoadingComments = false;
@@ -63,7 +66,7 @@ export const commentsSlice = createSlice({
       .addCase(postCommentForArticleId.fulfilled, (state, action) => {
         state.createCommentIsPending = false;
         state.failedToCreateComment = false;
-        state.byArticleId = action.payload.articleId;
+        state.byArticleId[action.payload.articleId].push(action.payload);
       })
       .addCase(postCommentForArticleId.rejected, (state) => {
         state.createCommentIsPending = false;
@@ -79,7 +82,7 @@ export const commentsSlice = createSlice({
       [loadCommentsForArticleId.fulfilled]: (state, action) => {
         state.isLoadingComments = false;
         state.failedToLoadComments = false;
-        state.byArticleId = action.payload.articleId;
+        state.byArticleId[action.payload.articleId] = action.payload.comments;
       },
       [loadCommentsForArticleId.rejected]: (state) => {
         state.isLoadingComments = false;
@@ -92,7 +95,7 @@ export const commentsSlice = createSlice({
       [postCommentForArticleId.fulfilled]: (state, action) => {
       state.createCommentIsPending = false;
       state.failedToCreateComment = false;
-      state.byArticleId = action.payload.articleId;
+      state.byArticleId[action.payload.articleId].push(action.payload);
       },
       [postCommentForArticleId.rejected]: (state) => {
       state.createCommentIsPending = false;
